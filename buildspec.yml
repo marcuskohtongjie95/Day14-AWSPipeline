@@ -1,0 +1,33 @@
+version: 0.2
+
+env:
+  parameter-store:
+    DOCKER_REGISTRY_USERNAME: /day14/docker-credentials/username
+    DOCKER_REGISTRY_PASSWORD: /day14/docker-credentials/password
+    DOCKER_REGISTRY_URL: /day14/docker-registry/url
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+      
+  pre_build:
+    commands:
+      - echo "Installing dependencies..."
+      - pip install -r requirements.txt
+      
+  build:
+    commands:
+      - echo "Running pre-build tests..."
+      - echo "Building Docker Image..."
+      - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
+      - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/aws-day14-dockerrepo:latest" .
+      - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/aws-day14-dockerrepo:latest"
+      
+  post_build:
+    commands:
+      - echo "Build completed successfully!!!"
+      
+artifacts:
+  files:
+    - '**/*'
